@@ -1,29 +1,30 @@
-name: "Deploy to aws"
+name: React CI/CD
 
-
-# Trigger the workflow from the github ui
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-    deploy:
-        runs-on: self-hosted
-        steps:
-            - name: "Setup nodejs"
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "21"
+  build:
+    runs-on: ubuntu-latest
 
-            - name: "Checkout code"
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            - name: "Install dependencies"
-              run: npm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
 
-            - name: "Install pm2 globally"
-              run: npm install pm2 -g  
+      - name: Install dependencies
+        run: npm ci
 
-            - name: "Run the tests"
-              run: npm test
-            
-            - name: "Deploy to aws"
-              run: pm2 start src/index.js
+      - name: Run build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
